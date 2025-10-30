@@ -1,0 +1,26 @@
+New curl commands
+
+1. Get all entries
+
+curl http://127.0.0.1:5000/get
+
+
+2. Add a new entry (POST)
+
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"name":"Dave","email":"dave@example.com"}' \
+  http://127.0.0.1:5000/post
+
+
+3. Delete an entry (DELETE)
+(e.g., delete entry at index 1)
+
+curl -X DELETE http://127.0.0.1:5000/delete/1
+
+
+4. Update an entry (PUT)
+(e.g., change index 0 to new values)
+
+curl -X PUT -H "Content-Type: application/json" \
+  -d '{"name":"Updated Alice","email":"alice@newmail.com"}' \
+  http://127.0.0.1:5000/update/0

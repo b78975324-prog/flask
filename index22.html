@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Flowchart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            font-family: Arial, sans-serif;
+        }
+
+        .flowchart {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .node {
+            position: absolute;
+            opacity: 0;
+            padding: 10px 20px;
+            font-size: 24px;
+            background: transparent;
+            border: 2px solid currentColor;
+            border-radius: 10px;
+            text-align: center;
+            transition: opacity 0.5s ease;
+            transform: translate(-50%, 0);
+            color: inherit;
+        }
+
+        .icon-node {
+            font-size: 32px;
+            padding: 15px;
+        }
+
+        #user {
+            top: 5%;
+            left: 50%;
+        }
+
+        #snapgorithm {
+            top: 20%;
+            left: 50%;
+        }
+
+        #psi-ai {
+            top: 35%;
+            left: 50%;
+        }
+
+        #linkedin {
+            top: 55%;
+            left: 25%;
+        }
+
+        #meta {
+            top: 55%;
+            left: 50%;
+        }
+
+        #tiktok {
+            top: 55%;
+            left: 75%;
+        }
+
+        @media (max-width: 768px) {
+            .node {
+                font-size: 18px;
+                padding: 8px 16px;
+            }
+
+            .icon-node {
+                font-size: 24px;
+                padding: 10px;
+            }
+
+            #user {
+                top: 5%;
+            }
+
+            #snapgorithm {
+                top: 15%;
+            }
+
+            #psi-ai {
+                top: 25%;
+            }
+
+            #linkedin {
+                top: 40%;
+                left: 50%;
+            }
+
+            #meta {
+                top: 55%;
+                left: 50%;
+            }
+
+            #tiktok {
+                top: 70%;
+                left: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flowchart">
+        <div id="user" class="node"><i class="fas fa-user"></i> User</div>
+        <div id="snapgorithm" class="node">Snapgorithm</div>
+        <div id="psi-ai" class="node">PSI AI</div>
+        <div id="linkedin" class="node icon-node"><i class="fab fa-linkedin"></i></div>
+        <div id="meta" class="node icon-node"><i class="fab fa-facebook"></i></div>
+        <div id="tiktok" class="node icon-node"><i class="fab fa-tiktok"></i></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/leader-line@1.0.7/leader-line.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nodes = document.querySelectorAll('.node');
+            nodes.forEach(node => {
+                node.style.display = 'block';
+                node.style.opacity = 0;
+            });
+
+            function detectTheme() {
+                const bgColor = window.getComputedStyle(document.body).backgroundColor;
+                const rgb = bgColor.match(/\d+/g);
+                const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+                const isDark = luminance < 0.5;
+                document.documentElement.style.setProperty('--text-color', isDark ? 'white' : 'black');
+                document.documentElement.style.setProperty('--line-color', isDark ? 'white' : 'black');
+                nodes.forEach(node => {
+                    node.style.color = isDark ? 'white' : 'black';
+                    node.style.borderColor = isDark ? 'white' : 'black';
+                });
+                return isDark ? 'white' : 'black';
+            }
+
+            const lineColor = detectTheme();
+
+            // Mutation observer to detect theme changes
+            const observer = new MutationObserver(detectTheme);
+            observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
+
+            const animationDuration = 2000;
+
+            const user = document.getElementById('user');
+            const snapgorithm = document.getElementById('snapgorithm');
+            const psiAi = document.getElementById('psi-ai');
+            const linkedin = document.getElementById('linkedin');
+            const meta = document.getElementById('meta');
+            const tiktok = document.getElementById('tiktok');
+
+            function showNode(node) {
+                node.style.opacity = 1;
+                return new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            function drawLine(start, end, options = {}) {
+                const line = new LeaderLine(start, end, {
+                    color: lineColor,
+                    size: 4,
+                    endPlug: 'arrow3',
+                    path: 'fluid',
+                    startSocket: 'bottom',
+                    endSocket: 'top',
+                    hide: true,
+                    ...options
+                });
+                line.show('draw', { duration: animationDuration, timing: 'ease-in-out' });
+                return new Promise(resolve => setTimeout(resolve, animationDuration + 100));
+            }
+
+            // Start animation
+            showNode(user)
+                .then(() => drawLine(user, snapgorithm))
+                .then(() => showNode(snapgorithm))
+                .then(() => drawLine(snapgorithm, psiAi))
+                .then(() => showNode(psiAi))
+                .then(() => {
+                    // Parallel arrows from PSI AI to icons
+                    const promises = [
+                        drawLine(psiAi, linkedin, { path: 'arc' })
+                            .then(() => showNode(linkedin)),
+                        drawLine(psiAi, meta, { path: 'straight' })
+                            .then(() => showNode(meta)),
+                        drawLine(psiAi, tiktok, { path: 'arc' })
+                            .then(() => showNode(tiktok))
+                    ];
+                    return Promise.all(promises);
+                })
+                .then(() => {
+                    // Parallel arrows from icons to user
+                    const promises = [
+                        drawLine(linkedin, user, { startSocket: 'top', endSocket: 'left', path: 'arc' }),
+                        drawLine(meta, user, { startSocket: 'top', endSocket: 'left', path: 'arc' }),
+                        drawLine(tiktok, user, { startSocket: 'top', endSocket: 'left', path: 'arc' })
+                    ];
+                    return Promise.all(promises);
+                })
+                .then(() => {
+                    // Feedback arrow from user to PSI AI
+                    return drawLine(user, psiAi, {
+                        startSocket: 'right',
+                        endSocket: 'right',
+                        path: 'arc',
+                        middleLabel: LeaderLine.captionLabel('Feedback', { color: lineColor, outlineColor: 'transparent' })
+                    });
+                });
+        });
+    </script>
+</body>
+</html>
